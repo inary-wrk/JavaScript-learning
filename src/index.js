@@ -1,11 +1,11 @@
 while (true) {
   let temperatureC = prompt("Enter the temperature in degrees Celsius");
-  if (!isNaN(temperatureC)) {
+  if (isNaN(temperatureC) || temperatureC === "" || temperatureC === null) {
+    alert("The Temperature should be a number");
+  } else {
     let temperatureF = (9 / 5) * temperatureC + 32;
     alert("Temperature in degrees Fahrenheit " + Math.round(temperatureF));
     break;
-  } else {
-    alert("The Temperature should be a number");
   }
 }
 
