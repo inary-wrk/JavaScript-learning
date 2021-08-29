@@ -196,7 +196,7 @@ while (GAME_FIELD.CORRECT_FIELD) {
   if (availableMovements.indexOf(commandFromUser) === -1) {
     const parsedNumber = parseInt(commandFromUser, 10);
     if (
-      parsedNumber !== NaN &&
+      !isNaN(parsedNumber) &&
       parsedNumber >= 0 &&
       parsedNumber < stateOfGame.playerMoves.moves.length
     ) {
