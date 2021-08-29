@@ -75,22 +75,60 @@ const stateOfGame = {
   player: {
     power: 10,
     position: {
-      x: 0,
-      y: 0,
+      _x: 0,
+      set x(value) {
+        this._x = value;
+        this.parent.currentMove++;
+      },
+      get x() {
+        return this._x;
+      },
+
+      _y: 0,
+      set y(value) {
+        this._y = value;
+        this.parent.currentMove++;
+      },
+      get y() {
+        return this._y;
+      },
     },
-  },
+    currentMove: 0,
+
+    init: function () {
+      this.position.parent = this;
+      delete this.init;
+      return this;
+    },
+  }.init(),
+
   playerMoves: {
-    moves: [`start: (${this.player.position.x}, ${this.player.position.y})`],
-    addMove: function (x, y) {
-      this.moves.push(`move ${this.moves.length - 1}: (${x}, ${y})`);
+    moves: [],
+    addMove: function (x, y, additionalInformation = ``) {
+      this.moves.push(
+        `ход ${this.moves.length}: (${x}, ${y})` + additionalInformation
+      );
+    },
+    addMoveAdditionalInformation: function (
+      playerMoveNumber,
+      additionalInformation
+    ) {
+      this.moves[playerMoveNumber] += additionalInformation;
     },
   },
-};
+
+  init: function () {
+    this.playerMoves.moves.push(
+      `старт: (${this.player.position._x}, ${this.player.position._y})`
+    );
+    return this;
+  },
+}.init();
 
 const GAME_FIELD = {
   WIDTH: gameField[0].length,
   HEIGHT: gameField.length,
-  correctField:
+  CORRECT_FIELD:
     gameFieldLengthValidation(gameField) &&
     gameFieldCellsValidation(gameField, Object.keys(MONSTERS).concat(null)),
 };
@@ -143,27 +181,42 @@ const getMessageForMovement = (availableMovements) => {
   const movementString = `Введите направление движения(${availableMovements.join(
     ", "
   )}): `;
-  const currentCoordinatesString = `Текущие координаты x: ${stateOfGame.player.position.x} y: ${stateOfGame.player.position.y}`;
+  const currentCoordinatesString = `Текущие координаты (x: ${stateOfGame.player.position.x}, y: ${stateOfGame.player.position.y})`;
+  const currentMoveString = `Текущий ход: ${
+    stateOfGame.player.currentMove + 1
+  }`;
+  const viewOldMovesString = `Чтобы посмотреть предыдущие ходы, введите номер хода.`;
 
-  return `${currentCoordinatesString}\n${movementString}`;
+  return `${currentCoordinatesString}   ${currentMoveString}\n${movementString}\n${viewOldMovesString}`;
 };
 
-while (GAME_FIELD.correctField) {
+while (GAME_FIELD.CORRECT_FIELD) {
   const availableMovements = getAvailableMovements();
-  const stringMovementOfPlayer = prompt(
-    getMessageForMovement(availableMovements)
-  );
-  if (availableMovements.indexOf(stringMovementOfPlayer) === -1) {
+  const commandFromUser = prompt(getMessageForMovement(availableMovements));
+  if (availableMovements.indexOf(commandFromUser) === -1) {
+    const parsedNumber = parseInt(commandFromUser, 10);
+    if (
+      parsedNumber !== NaN &&
+      parsedNumber >= 0 &&
+      parsedNumber < stateOfGame.playerMoves.moves.length
+    ) {
+      alert(stateOfGame.playerMoves.moves[parsedNumber]);
+      continue;
+    }
     // некорректный ввод
     alert("Некорректный воод, попробуйте еще раз");
 
     //TODO: вернуть continue после отладки
-    break;
-    //continue;
+    //break;
+    continue;
   }
 
-  movementsOfPlayer[stringMovementOfPlayer]();
+  movementsOfPlayer[commandFromUser]();
 
+  stateOfGame.playerMoves.addMove(
+    stateOfGame.player.position.x,
+    stateOfGame.player.position.y
+  );
   // проверка на монстра
   const gameCell =
     gameField[stateOfGame.player.position.y][stateOfGame.player.position.x];
@@ -175,6 +228,10 @@ while (GAME_FIELD.correctField) {
   // сражение с монстром
   let messageOfBattle = `Вы встретили монстра ${gameCell}\n`;
   if (stateOfGame.player.power >= monster.power) {
+    stateOfGame.playerMoves.addMoveAdditionalInformation(
+      stateOfGame.player.currentMove,
+      ` побежден ${gameCell}`
+    );
     stateOfGame.player.power += monster.power;
     messageOfBattle += "Вы выиграли\n";
     messageOfBattle += `Ваша сила теперь ${stateOfGame.player.power}`;
