@@ -1,0 +1,47 @@
+html {
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0px;
+}
+
+/* .root-Container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  resize: vertical;
+  overflow: auto;
+} */
+
+.chessBoard {
+  position: relative;
+  width: 50%;
+  height: 80vh;
+  width: height;
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  grid-auto-rows: 1fr;
+  border: 1px solid black;
+}
+
+chessBoard:before {
+  position: relative;
+  width: 50%;
+}
+
+.chessCell {
+  display: flex;
+}
+
+/* .chessFigure-BlackColor {
+  stroke: white;
+  fill: black;
+} */
